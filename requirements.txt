@@ -1,0 +1,8 @@
+pandas
+scikit-learn
+spacy
+matplotlib
+seaborn
+python-docx
+pdfminer.six
+streamlit
