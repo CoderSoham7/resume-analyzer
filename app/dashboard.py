@@ -3,8 +3,9 @@ import os
 import streamlit as st
 import pandas as pd
 import subprocess
+import spacy
 
-# Fallback for environments where __file__ is not defined
+# Add 'src' directory to system path
 base_dir = os.path.abspath(os.path.join(os.getcwd(), 'src'))
 sys.path.append(base_dir)
 
@@ -13,18 +14,19 @@ import analyzer
 import predictor
 import visualizer
 
-# Ensure spaCy model is available
-import spacy
-try:
-    nlp = spacy.load("en_core_web_sm")
-except OSError:
-    subprocess.run(["python", "-m", "spacy", "download", "en_core_web_sm"])
-    nlp = spacy.load("en_core_web_sm")
+# Safe spaCy model loading
+def get_spacy_model():
+    try:
+        return spacy.load("en_core_web_sm")
+    except OSError:
+        subprocess.run(["python", "-m", "spacy", "download", "en_core_web_sm"])
+        return spacy.load("en_core_web_sm")
 
-# Set page configuration
+nlp = get_spacy_model()
+
+# Streamlit page config
 st.set_page_config(page_title="📄 Smart Resume Analyzer", layout="wide")
 
-# Custom CSS
 def set_custom_css():
     st.markdown("""
         <style>
@@ -49,7 +51,6 @@ def set_custom_css():
         </style>
     """, unsafe_allow_html=True)
 
-# Dark mode toggle
 if "dark_mode" not in st.session_state:
     st.session_state.dark_mode = False
 
@@ -60,13 +61,11 @@ set_custom_css()
 mode_class = "dark-mode" if st.session_state.dark_mode else "light-mode"
 st.markdown(f'<div class="{mode_class}">', unsafe_allow_html=True)
 
-# Header
 st.markdown("## 📄 Smart Resume Analyzer & Career Predictor")
 st.markdown("Upload your resume to discover your top job matches and future career path! 🚀")
 mode_label = "🌙 Switch to Dark Mode" if not st.session_state.dark_mode else "☀️ Switch to Light Mode"
 st.button(mode_label, on_click=toggle_mode)
 
-# File upload
 uploaded_file = st.file_uploader("📤 Drag and drop your resume (PDF or DOCX)", type=["pdf", "docx"])
 
 if uploaded_file:
